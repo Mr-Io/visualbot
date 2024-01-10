@@ -14,23 +14,37 @@ pyautogui.typewrite("hi there")
 pyautogui.typewrite(["a", "left", "ctrlleft"])
 pyautogui.hotkey("ctrlleft", "a")
 """
+import os
 import random
 import time
 
 from PIL import ImageGrab
 import pyautogui
 
+menu_location = None
+
+def m_wait():
+    time.sleep(5)
+
+def s_wait():
+    time.sleep(1)
 
 X_PAD = 2560
 Y_PAD = 0 
 
-def screen_grab(x=1920, y=1080):
+def screen_grab(x=1920, y=1080, save=False):
     box = (X_PAD, Y_PAD, X_PAD+x, Y_PAD+y)
     im = ImageGrab.grab(box)
-    #im.save(f"{os.getcwd()}/full_snap__{str(int(time.time()))}.png", "PNG")
+    if save:
+        im.save(f"{os.getcwd()}/full_snap__{str(int(time.time()))}.png", "PNG")
     return im
 
 def back():
-    pyautogui.moveTo(X_PAD+23, Y_PAD+90, 0.2 + random.random())
+    pyautogui.moveTo(X_PAD+25, Y_PAD+93, 0.2 + random.random())
     pyautogui.click()
-    time.sleep(5)
+    m_wait()
+
+def reload():
+    pyautogui.moveTo(X_PAD+95, Y_PAD+93, 0.2 + random.random())
+    pyautogui.click()
+    m_wait()

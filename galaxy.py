@@ -4,8 +4,10 @@ import math
 
 import pyautogui
 
-from base import X_PAD, Y_PAD, screen_grab, back
+from base import *
 from mssg import messages
+
+GALAXY_MENU = "GALAXY"
 
 TARGET_GREY = (92, 92, 92)
 TARGET_BLUE_min = (30, 110, 100)
@@ -21,21 +23,21 @@ def is_target(target, tmin, tmax):
             return False
     return True
 
-def galaxy():
-    """go to galaxy"""
-    pyautogui.moveTo(X_PAD+455, Y_PAD+532, 0.4)
-    pyautogui.click()
-    time.sleep(5)
-
-def galaxy__system_up(go=1):
+def system_up(go=1):
     if go == 1:
         pyautogui.moveTo(X_PAD+760, Y_PAD+300, 0.4)
     else:
         pyautogui.moveTo(X_PAD+700, Y_PAD+300, 0.4)
     pyautogui.click()
 
-def galaxy__go(galaxy, system):
-    if not galaxy or not system:
+def select(galaxy=None, system=None):
+    global menu_location
+    if menu_location != GALAXY_MENU:
+        menu_location = GALAXY_MENU
+        pyautogui.moveTo(X_PAD+455, Y_PAD+532, 0.4)
+        pyautogui.click()
+        time.sleep(5)
+    if galaxy is None or system is None:
         return
     # change galaxy
     pyautogui.moveTo(X_PAD+630, Y_PAD+300, 1)
@@ -49,11 +51,14 @@ def galaxy__go(galaxy, system):
     pyautogui.moveTo(X_PAD+790, Y_PAD+300, 1)
     pyautogui.click()
 
-def galaxy_system__spy(planet):
+def spy(planet, commit=True):
     tries = 0
     px = (0,0,0)
     while (tries<6):
         pyautogui.moveTo(X_PAD+1155, Y_PAD+350 + planet*35, 0.2 + random.random())
+        if not commit:
+            time.sleep(0.2 + random.random())
+            return
         pyautogui.click()
         time.sleep(0.2 + random.random())
         im = screen_grab()
@@ -63,18 +68,18 @@ def galaxy_system__spy(planet):
             return 0
         tries += 1
         rt = random.randrange(math.pow(2, tries), math.pow(3, tries))
+        print(f"spy on planet {planet} failed, waiting {rt} s before try nº:{tries})")
         if rt > 8:
             messages()
-
-        print(f"spy on planet {planet} failed, waiting {rt} s before try nº:{tries})")
-        time.sleep(rt)
-        if rt > 8:
+            time.sleep(rt)
             back()
+        else:
+            time.sleep(rt)
         time.sleep(1 + random.random())
     return -1
     
 
-def galaxy_system__targetcolor(planet, image=None):
+def targetcolor(planet, image=None):
     if not image:
         image = screen_grab()
     px = image.getpixel((1050, 350+planet*35))

@@ -18,9 +18,10 @@ import time
 
 import pyautogui
 
-from base import X_PAD, Y_PAD, screen_grab
-
-from galaxy import *
+from base import * 
+import galaxy 
+import defense
+import shipyard 
 
 
 def overview():
@@ -34,37 +35,65 @@ def planet(number=1):
     pyautogui.click()
     time.sleep(5)
 
-def main():
+def spy(planets=range(1, 11), commit=True):
     # check that we are in the correct tab
     # go 10 galaxies back and print witch type of target it has
-    galaxy()
+    galaxy.select()
     srange = 21
-    for p in range(1, 11):
+    for p in planets:
         planet(p)
         for _ in range(0, srange):
             time.sleep(0.5 + random.random())
             im = screen_grab()
             for i in range(1, 16):
-                tc = galaxy_system__targetcolor(i, im)
+                tc = galaxy.targetcolor(i, im)
                 print(i, tc)
-                if is_target(tc, TARGET_BLUE_min, TARGET_BLUE_max) or is_target(tc, TARGET_PURPLE_min, TARGET_PURPLE_max):
-                    galaxy_system__spy(i)
-            galaxy__system_up()
-        galaxy()
+                if galaxy.is_target(tc, galaxy.TARGET_BLUE_min, galaxy.TARGET_BLUE_max) or galaxy.is_target(tc, galaxy.TARGET_PURPLE_min, galaxy.TARGET_PURPLE_max):
+                    galaxy.spy(i, commit=commit)
+            galaxy.system_up()
+        planet(p)
         for _ in range(0, srange):
-            galaxy__system_up(-1)
+            galaxy.system_up(-1)
             time.sleep(0.5 + random.random())
             im = screen_grab()
             for i in range(1, 16):
-                tc = galaxy_system__targetcolor(i, im)
+                tc = galaxy.targetcolor(i, im)
                 print(i, tc)
-                if is_target(tc, TARGET_BLUE_min, TARGET_BLUE_max) or is_target(tc, TARGET_PURPLE_min, TARGET_PURPLE_max):
-                    galaxy_system__spy(i)
+                if galaxy.is_target(tc, galaxy.TARGET_BLUE_min, galaxy.TARGET_BLUE_max) or galaxy.is_target(tc, galaxy.TARGET_PURPLE_min, galaxy.TARGET_PURPLE_max):
+                    galaxy.spy(i, commit=commit)
 
 
-    # wait to complete load
+def build_defenses(planets=range(1, 11), commit=True):
+    # check that we are in the correct tab
+    # go 10 galaxies back and print witch type of target it has
+    defense.select()
+    for p in planets:
+        planet(p)
+        for d in [defense.SMALL_SHIELD, defense.BIG_SHIELD]:
+            defense.select(d)
+            defense.build(commit=commit)
+
+        for d in [defense.ANTIBALLISTIC, defense.PLASMA_TURRET, defense.GAUSS_CANNON, defense.HEAVY_LASER, defense.ROCKET_LAUNCHER]:
+            defense.select(d)
+            defense.build(n=0, commit=commit)
+            reload()
+
+
+def fleetsave(planets=range(1, 11)):
+    for p in planets:
+        planet(p)
+        shipyard.select()
+        shipyard.select(shipyard.RECYCLER)
+        shipyard.build(10, build=False)
+
+
+
+
+# wait to complete load
 
 
 if __name__ == "__main__":
-    main()
+    screen_grab(save=True)
+    spy(commit=False)
+    fleetsave()
     pass 
