@@ -21,30 +21,48 @@ import time
 from PIL import ImageGrab
 import pyautogui
 
+X_PAD = 1920 #2560
+Y_PAD = 0
+
+
 menu_location = None
+planet_location = (0, False)
+
+def planet(number=1, moon=False):
+    global planet_location
+    if not (planet_location[0]==number and planet_location[1]==moon):
+        planet_location = (number, moon)
+        x = 1280 if not moon else 1440
+        pyautogui.moveTo(X_PAD+x, Y_PAD+265+number*45, xs_wait(wait=False))
+        pyautogui.click()
+        m_wait()
+
+def l_wait():
+    return time.sleep(8+2*random.random())
 
 def m_wait():
-    time.sleep(5)
+    return time.sleep(3 + random.random())
 
 def s_wait():
-    time.sleep(1)
+    return time.sleep(1 + random.random()/2)
 
-X_PAD = 2560
-Y_PAD = 0 
+def xs_wait(wait=False):
+    r = 0.1 + random.random()/10
+    if wait:
+        time.sleep(r)
+    return r
 
-def screen_grab(x=1920, y=1080, save=False):
-    box = (X_PAD, Y_PAD, X_PAD+x, Y_PAD+y)
-    im = ImageGrab.grab(box)
+def screen_grab(x=1920, y=1080, save=False, padding=True, allscreen=False):
+    box = (X_PAD, Y_PAD, X_PAD+x, Y_PAD+y) if padding else (0, 0, x, y)
+    im = ImageGrab.grab(box) if not allscreen else ImageGrab.grab() 
     if save:
         im.save(f"{os.getcwd()}/full_snap__{str(int(time.time()))}.png", "PNG")
     return im
 
 def back():
-    pyautogui.moveTo(X_PAD+25, Y_PAD+93, 0.2 + random.random())
-    pyautogui.click()
+    pyautogui.hotkey('alt', 'left')
     m_wait()
 
 def reload():
-    pyautogui.moveTo(X_PAD+95, Y_PAD+93, 0.2 + random.random())
-    pyautogui.click()
+    pyautogui.hotkey('ctrl', 'r')
     m_wait()

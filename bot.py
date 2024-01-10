@@ -14,78 +14,115 @@ pyautogui.typewrite("hi there")
 pyautogui.typewrite(["a", "left", "ctrlleft"])
 pyautogui.hotkey("ctrlleft", "a")
 """
+import datetime
 import time
+import random
 
 import pyautogui
 
-from base import * 
+import base 
+import proc
 import galaxy 
 import defense
 import shipyard 
+import fleet
 
+MENU_OVERVIEW = "MENU_OVERVIEW"
 
 def overview():
-    """go to overview"""
-    pyautogui.moveTo(X_PAD+455, Y_PAD+305, 0.2 + random.random())
-    pyautogui.click()
-    time.sleep(5)
-
-def planet(number=1):
-    pyautogui.moveTo(X_PAD+1280, Y_PAD+265+number*45, 0.2 + random.random())
-    pyautogui.click()
-    time.sleep(5)
+    if base.menu_location != MENU_OVERVIEW:
+        base.menu_location = MENU_OVERVIEW
+        pyautogui.moveTo(base.X_PAD+455, base.Y_PAD+305, base.xs_wait())
+        pyautogui.click()
+        base.m_wait()
 
 def spy(planets=range(1, 11), commit=True):
-    # check that we are in the correct tab
-    # go 10 galaxies back and print witch type of target it has
-    galaxy.select()
     srange = 21
     for p in planets:
-        planet(p)
+        base.planet(p)
+        galaxy.spy_all(commit=commit)
         for _ in range(0, srange):
-            time.sleep(0.5 + random.random())
-            im = screen_grab()
-            for i in range(1, 16):
-                tc = galaxy.targetcolor(i, im)
-                print(i, tc)
-                if galaxy.is_target(tc, galaxy.TARGET_BLUE_min, galaxy.TARGET_BLUE_max) or galaxy.is_target(tc, galaxy.TARGET_PURPLE_min, galaxy.TARGET_PURPLE_max):
-                    galaxy.spy(i, commit=commit)
             galaxy.system_up()
-        planet(p)
+            time.sleep(1 + random.random()/2)
+            galaxy.spy_all(commit=commit)
+        base.planet(p)
         for _ in range(0, srange):
             galaxy.system_up(-1)
             time.sleep(0.5 + random.random())
-            im = screen_grab()
-            for i in range(1, 16):
-                tc = galaxy.targetcolor(i, im)
-                print(i, tc)
-                if galaxy.is_target(tc, galaxy.TARGET_BLUE_min, galaxy.TARGET_BLUE_max) or galaxy.is_target(tc, galaxy.TARGET_PURPLE_min, galaxy.TARGET_PURPLE_max):
-                    galaxy.spy(i, commit=commit)
-
+            galaxy.spy_all(commit=commit)
 
 def build_defenses(planets=range(1, 11), commit=True):
     # check that we are in the correct tab
     # go 10 galaxies back and print witch type of target it has
-    defense.select()
+    start = time.time()
     for p in planets:
-        planet(p)
-        for d in [defense.SMALL_SHIELD, defense.BIG_SHIELD]:
-            defense.select(d)
-            defense.build(commit=commit)
+        base.planet(p)
+        for d in [defense.SMALL_SHIELD, defense.BIG_SHIELD, defense.ANTIBALLISTIC]:
+            defense.build(d, commit=commit)
 
-        for d in [defense.ANTIBALLISTIC, defense.PLASMA_TURRET, defense.GAUSS_CANNON, defense.HEAVY_LASER, defense.ROCKET_LAUNCHER]:
-            defense.select(d)
-            defense.build(n=0, commit=commit)
-            reload()
+    for d in [defense.PLASMA_TURRET, defense.GAUSS_CANNON, defense.HEAVY_LASER, defense.ROCKET_LAUNCHER]:
+        for p in planets:
+            base.planet(p)
+            defense.build(item=d, n=0, commit=commit)
+    end = time.time()
+    return end - start
+        
+def auto_fleetsave_recall(hours, minutes=0, commit=True, init=True):
+    print(f"initiating fleetsaving at {time.asctime()} for {hours:02d}h{minutes:02d}")
+    if init:
+        proc.init()
+    fleet.move(fleet.FLEETLOGIC_FS1GX, fleet.FLEETCOMP_ALL, speed=1, commit=commit) 
+    bd_time = build_defenses(commit=commit)
+    proc.end()
 
+    t_waiting = (hours*3600 + min*60)/2 - bd_time 
+    time.sleep(t_waiting if t_waiting > 0 else 1)
 
-def fleetsave(planets=range(1, 11)):
-    for p in planets:
-        planet(p)
-        shipyard.select()
-        shipyard.select(shipyard.RECYCLER)
-        shipyard.build(10, build=False)
+    proc.init()
+    fleet.recall(commit=commit)
 
+def random_actions(n=10):
+    action = [(galaxy._select, 10), 
+              (defense._select, 4), 
+              (overview, 2), 
+              (shipyard._select, 4), 
+              (fleet._select, 2)]
+    n_actions = 0
+    n = random.randrange(1, n)
+
+    while (True): 
+        p = random.randrange(1, 11)
+        base.planet(p)
+        for _ in range(0, random.randrange(1, 7)):
+            act = random.choice(action)
+            n_actions += 1
+            #print(f"action: nº {n_actions} - {act[0].__module__}")
+            act[0]()
+            time.sleep(random.randrange(1, act[1]))
+        if n_actions > n:
+            return
+
+def auto_defense(hours=[6, 14, 22], commit=True):
+    if hours is None:
+        return
+    
+    while(True):
+        for h in hours:
+            while(h != datetime.datetime.now().hour):
+                time.sleep(600)
+            time.sleep(random.randrange(1, 1800))
+            print(f"--- Starting auto defense at {time.asctime()} ----")
+            start = time.time()
+            proc.init()
+            base.l_wait()
+            random_actions(40)
+            build_defenses(commit=commit)
+            random_actions(10)
+            base.l_wait()
+            end = time.time()
+            dtime = end-start
+            proc.end()
+            print(f"total duration: {dtime} s")
 
 
 
@@ -93,7 +130,5 @@ def fleetsave(planets=range(1, 11)):
 
 
 if __name__ == "__main__":
-    screen_grab(save=True)
-    spy(commit=False)
-    fleetsave()
-    pass 
+    #spy(commit=False)
+    pass
