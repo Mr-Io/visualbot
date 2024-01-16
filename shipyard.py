@@ -1,38 +1,58 @@
 import pyautogui
 
-import base
+from base import enter, xs_wait, s_wait, m_wait, copy
+from menu import menu, MENU_SHIPYARD
 
-MENU_SHIPYARD = "MENU_SHIPYARD"
+BATTLECRUISER = "battlecruiser.png"
+BATTLESHIP = "battleship.png"
+BOMBER = "bomber.png"
+COLONYSER = "colonyser.png"
+CRUISER = "cruiser.png"
+DESTROYER = "destroyer.png"
+ESP_PROBE = "esp_probe.png" # problem with fleets...
+HEAVY_FIGHER = "heavy_fighter.png"
+LARGE_CARGO = "large_cargo.png"
+LIGHT_FIGHTER = "light_fighter.png"
+RECYCLER = "recycler.png"
+RIP = "rip.png"
+SMALL_CARGO = "small_cargo.png"
 
-RECYCLER = (980, 695)
-
-
-def _select():
-    if base.menu_location != MENU_SHIPYARD:
-        base.menu_location = MENU_SHIPYARD 
-        pyautogui.moveTo(base.X_PAD+455, base.Y_PAD+457, 0.4)
-        pyautogui.click()
-        base.m_wait()
-
+@menu(MENU_SHIPYARD)
 def build(item=None, n=1, commit=True):
-    _select()
     if item is None:
         return
-    pyautogui.moveTo(base.X_PAD+item[0], base.Y_PAD+item[1], 0.4)
+    try:
+        x, y = pyautogui.locateCenterOnScreen(f"images/{item}", confidence=0.95)
+    except pyautogui.ImageNotFoundException:
+        print(f"Error: unable to build '{item}' (not available)")
+        return
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
-    base.s_wait()
+    s_wait()
+    mx, my = pyautogui.locateCenterOnScreen("images/max.png", confidence=0.9)
     if n == 0:
-        pyautogui.moveTo(base.X_PAD+1150, base.Y_PAD+480, 0.4)
+        pyautogui.moveTo(mx, my, xs_wait(wait=False))
         pyautogui.click()
     elif n > 1:
-        pyautogui.moveTo(base.X_PAD+1163,base.Y_PAD+450, 0.2)
+        pyautogui.moveTo(mx+30, my-30, xs_wait(wait=False))
         pyautogui.click()
         pyautogui.typewrite(f"{n}")
-    pyautogui.moveTo(base.X_PAD+1165, base.Y_PAD+355, 0.4)
+    try:
+        buildb = pyautogui.locateCenterOnScreen("images/build.png")
+    except pyautogui.ImageNotFoundException:
+        if commit:
+            print(f"Error: {item} cannot be build")
+        return
     if commit:
-        pyautogui.click()
-        base.m_wait()
+        enter()
+    m_wait()
 
+def number(item):
+    build(item, commit=False)
+    x, y = pyautogui.locateCenterOnScreen("images/number.png", confidence=0.9)
+    pyautogui.moveTo(x+28, y)
+    pyautogui.doubleClick()
+    return int(copy())
 
 
 

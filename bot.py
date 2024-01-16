@@ -18,83 +18,84 @@ import datetime
 import time
 import random
 
-import pyautogui
-
-import base 
 import proc
 import galaxy 
-import defense
-import shipyard 
+import defence
 import fleet
-
-MENU_OVERVIEW = "MENU_OVERVIEW"
-
-def overview():
-    if base.menu_location != MENU_OVERVIEW:
-        base.menu_location = MENU_OVERVIEW
-        pyautogui.moveTo(base.X_PAD+455, base.Y_PAD+305, base.xs_wait())
-        pyautogui.click()
-        base.m_wait()
+from base import m_wait, l_wait
+from menu import menu, planet
 
 def spy(planets=range(1, 11), commit=True):
+    start = time.time()
     srange = 21
     for p in planets:
-        base.planet(p)
+        planet(p)
         galaxy.spy_all(commit=commit)
         for _ in range(0, srange):
             galaxy.system_up()
             time.sleep(1 + random.random()/2)
             galaxy.spy_all(commit=commit)
-        base.planet(p)
+        planet(p, forced=True)
         for _ in range(0, srange):
             galaxy.system_up(-1)
             time.sleep(0.5 + random.random())
             galaxy.spy_all(commit=commit)
+    end = time.time()
+    dtime = end - start
+    print(f"spy total duration: {dtime/60:.1f} min")
+    return dtime
 
 def build_defenses(planets=range(1, 11), commit=True):
     # check that we are in the correct tab
     # go 10 galaxies back and print witch type of target it has
     start = time.time()
     for p in planets:
-        base.planet(p)
-        for d in [defense.SMALL_SHIELD, defense.BIG_SHIELD, defense.ANTIBALLISTIC]:
-            defense.build(d, commit=commit)
+        planet(p)
+        for d in [defence.SMALL_SHIELD, defence.BIG_SHIELD, defence.ANTIBALLISTIC]:
+            defence.build(d, commit=commit)
 
-    for d in [defense.PLASMA_TURRET, defense.GAUSS_CANNON, defense.HEAVY_LASER, defense.ROCKET_LAUNCHER]:
+    for d in [defence.PLASMA_TURRET, defence.GAUSS_CANNON, defence.HEAVY_LASER, defence.ROCKET_LAUNCHER]:
         for p in planets:
-            base.planet(p)
-            defense.build(item=d, n=0, commit=commit)
+            planet(p)
+            defence.build(item=d, n=0, commit=commit)
     end = time.time()
-    return end - start
+    dtime = end-start
+    print(f"build defenses total duration: {dtime/60:.1f} min")
+    return dtime
         
-def auto_fleetsave_recall(hours, minutes=0, commit=True, init=True):
-    print(f"initiating fleetsaving at {time.asctime()} for {hours:02d}h{minutes:02d}")
-    if init:
+def auto_fleetsave_recall(hours, minutes=0, commit=True, defenses=True):
+    print(f"--- initiating fleetsaving at {time.asctime()} for {hours:02d}h{minutes:02d} ---")
+    start= time.time()
+    if commit:
         proc.init()
+    l_wait()
     fleet.move(fleet.FLEETLOGIC_FS1GX, fleet.FLEETCOMP_ALL, speed=1, commit=commit) 
-    bd_time = build_defenses(commit=commit)
+    #fleet.move({(2, False): (10, True)}, ((fleet.RECYCLER, 1),), speed=1, commit=commit) #for test
+    random_actions(10)
+    end = time.time()
+    dtime = end-start
+    print(f"fleetsave total duration: {dtime/60:.1f} min")
+    if not commit:
+        return
+    bd_time = build_defenses(commit=commit) if defenses else 0
     proc.end()
-
-    t_waiting = (hours*3600 + min*60)/2 - bd_time 
-    time.sleep(t_waiting if t_waiting > 0 else 1)
-
+    t_waiting = (hours*3600 + minutes*60)//2 - bd_time - dtime
+    time.sleep(t_waiting if t_waiting > 30 else 30)
     proc.init()
     fleet.recall(commit=commit)
+    proc.end()
+
 
 def random_actions(n=10):
-    action = [(galaxy._select, 10), 
-              (defense._select, 4), 
-              (overview, 2), 
-              (shipyard._select, 4), 
-              (fleet._select, 2)]
+    actions = ((lambda: 0 ),)
     n_actions = 0
     n = random.randrange(1, n)
 
     while (True): 
         p = random.randrange(1, 11)
-        base.planet(p)
+        planet(p)
         for _ in range(0, random.randrange(1, 7)):
-            act = random.choice(action)
+            act = random.choice(actions)
             n_actions += 1
             #print(f"action: nº {n_actions} - {act[0].__module__}")
             act[0]()
@@ -102,10 +103,7 @@ def random_actions(n=10):
         if n_actions > n:
             return
 
-def auto_defense(hours=[6, 14, 22], commit=True):
-    if hours is None:
-        return
-    
+def auto_defense(hours, commit=True):
     while(True):
         for h in hours:
             while(h != datetime.datetime.now().hour):
@@ -114,15 +112,15 @@ def auto_defense(hours=[6, 14, 22], commit=True):
             print(f"--- Starting auto defense at {time.asctime()} ----")
             start = time.time()
             proc.init()
-            base.l_wait()
+            l_wait()
             random_actions(40)
             build_defenses(commit=commit)
             random_actions(10)
-            base.l_wait()
+            l_wait()
             end = time.time()
             dtime = end-start
             proc.end()
-            print(f"total duration: {dtime} s")
+            print(f"total duration: {dtime/60:.1f} min")
 
 
 

@@ -27,7 +27,7 @@ def init():
     pyautogui.moveTo(*logb, 0.4)
     pyautogui.click()
     base.m_wait()
-    pyautogui.moveTo(base.X_PAD+1390, base.Y_PAD+385, base.xs_wait())
+    pyautogui.moveTo(base.X_PAD+1390, base.Y_PAD+241, base.xs_wait())
     pyautogui.click()
     base.l_wait()
 
@@ -40,7 +40,7 @@ def end():
     pyautogui.click()
 
 def test():
-    pyautogui.click(base.X_PAD+100,base.Y_PAD+200)
+    pyautogui.click(base.X_PAD+100,base.Y_PAD+56)
     base.back()
 
 
