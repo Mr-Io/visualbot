@@ -14,17 +14,33 @@ pyautogui.typewrite("hi there")
 pyautogui.typewrite(["a", "left", "ctrlleft"])
 pyautogui.hotkey("ctrlleft", "a")
 """
+import re
+
 import pyautogui
 
-from base import xs_wait, m_wait, X_PAD, Y_PAD
+from base import xs_wait, s_wait, m_wait, l_wait, X_PAD, Y_PAD, copy
 
-MENU_OVERVIEW = "menu_overview.png"
-MENU_SHIPYARD = "menu_shipyard.png"
-MENU_DEFENCE = "menu_defence.png"
-MENU_FLEET = "menu_fleet.png"
-MENU_GALAXY = "menu_galaxy.png"
+from proc import get_code
+
+OVERVIEW = "menu_overview.png"
+SHIPYARD = "menu_shipyard.png"
+DEFENCE = "menu_defence.png"
+FLEET = "menu_fleet.png"
+GALAXY = "menu_galaxy.png"
+MSSG = "menu_mssg.png"
 
 planet_location = (0, False)
+
+def go(menu):
+    try:
+        x, y = pyautogui.locateCenterOnScreen(f"images/{menu}")
+    except pyautogui.ImageNotFoundException:
+        print(f"{menu} not available")
+    else:
+        pyautogui.moveTo(x, y, xs_wait(wait=False))
+        pyautogui.click()
+        m_wait()
+
 
 def menu(menu):
     def decorator(func):
@@ -49,3 +65,13 @@ def planet(number=1, moon=False, forced=False):
         pyautogui.moveTo(X_PAD+x, Y_PAD+121+number*45, xs_wait(wait=False))
         pyautogui.click()
         m_wait()
+    
+def resources():
+    html_text = get_code()
+    res = {}
+    for i in ["metal", "crystal", "deuterium"]:
+        m = re.search(f'<span id="resources_{i}" data-raw="(\d+)"', html_text)
+        res[i] = int(m.groups()[0])
+    return res
+
+    

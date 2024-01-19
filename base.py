@@ -22,8 +22,8 @@ import pyperclip
 from PIL import ImageGrab
 import pyautogui
 
-X_PAD = 2*1920 #2560 
-Y_PAD = 114 #144
+X_PAD =  2560 #2*1920
+Y_PAD =  144 #114
 
 def l_wait():
     return time.sleep(8+2*random.random())
@@ -31,8 +31,11 @@ def l_wait():
 def m_wait():
     return time.sleep(3 + random.random())
 
-def s_wait():
-    return time.sleep(1 + random.random()/2)
+def s_wait(wait=True):
+    r = 1 + random.random()/2
+    if wait:
+        time.sleep(r)
+    return r
 
 def xs_wait(wait=False):
     r = 0.2 + random.random()/5
@@ -60,6 +63,7 @@ def enter():
     m_wait()
 
 def copy():
+    pyperclip.copy('')
     pyautogui.hotkey('ctrl', 'c')
     return pyperclip.paste()
 
