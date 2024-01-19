@@ -44,4 +44,16 @@ def test():
     base.back()
 
 
+def get_code():
+    pyautogui.hotkey('ctrl', 'u')
+    base.s_wait()
+    pyautogui.hotkey('ctrl', 'a')
+    res = base.copy()
+    base.s_wait()
+    pyautogui.hotkey('ctrl', 'w')
+    return res
+
+
+
+
 

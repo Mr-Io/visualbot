@@ -1,25 +1,23 @@
 import time
 import pyautogui
 
-from base import X_PAD, Y_PAD, xs_wait, s_wait, m_wait, enter
-from menu import menu, MENU_FLEET, planet
+import menu
 
-LIGHT_FIGHTER = (605, 222)
-HEAVY_FIGHTER = (685, 222)
-CRUISER = (765, 222)
-BATTLESHIP = (845, 222)
-BATTLECRUISER = (925, 222)
-BOMBER = (605, 300)
-DESTROYER = (685, 300)
-RIP = (765, 300)
-REAPER = (845, 300)
-PATHFINDER = (925, 300)
-SMALL_CARGO = (1020, 222)
-LARGE_CARGO = (1100, 222)
-COLONYSER = (1180, 222)
-RECYCLER = (1020, 300)
-ESP_PROBE = (1100, 300)
-ALL_FLEET = "images/fleet_selectall.png"
+from base import xs_wait, s_wait, m_wait, enter, copy
+
+from ships import LIGHT_FIGHTER, HEAVY_FIGHTER, CRUISER, BATTLESHIP, BATTLECRUISER, BOMBER, DESTROYER, RIP, SMALL_CARGO, LARGE_CARGO, COLONYSER, RECYCLER, ESP_PROBE, ALL_SHIPS
+
+FLEETLOGIC_ALLI2 = {(1, False): (2, True),
+                    (2, False): (2, True),
+                    (3, False): (2, True),
+                    (4, False): (2, True),
+                    (5, False): (2, True),
+                    (6, False): (2, True),
+                    (7, False): (2, True),
+                    (8, False): (2, True),
+                    (9, False): (2, True),
+                    (10, False):(2, True),
+                    }
 
 FLEETLOGIC_FS1GX = {(1, False): (7, True),
                     (2, False): (7, True),
@@ -37,25 +35,29 @@ FLEETCOMP_EXAMPLE = ((LARGE_CARGO, 124),
                      (RECYCLER, 1),
                      (SMALL_CARGO, None))
 
-FLEETCOMP_ALL = ((ALL_FLEET, None),)
+FLEETCOMP_ALL = ((ALL_SHIPS, None),)
 
-EMPTYMOOMS = {(2, True): (2, False),
+EMPTYMOOMS = {(1, True): (1, False),
+              (2, True): (2, False),
               (3, True): (3, False),
+              (4, True): (4, False),
               (5, True): (5, False),
+              (6, True): (6, False),
               (7, True): (7, False),
               (8, True): (8, False),
               (9, True): (9, False),
               (10, True): (10, False),
               }
 
-@menu(MENU_FLEET)
-def _select(item=None, n=None):
-    if item is None:
+@menu.menu(menu.FLEET)
+def _select(ship=None, n=None):
+    if ship is None:
         return
-    elif isinstance(item, str):
-        x, y = pyautogui.locateCenterOnScreen(item) 
-    else:
-        x, y = (X_PAD+item[0], Y_PAD+item[1])
+    try: 
+        x, y = pyautogui.locateCenterOnScreen(ship.img)
+    except:
+        print(f"{ship} not available")
+        return
     if n is None:
         pyautogui.moveTo(x, y, xs_wait())
         pyautogui.click()
@@ -64,18 +66,52 @@ def _select(item=None, n=None):
         pyautogui.doubleClick()
         pyautogui.typewrite(f"{n}")
 
+@menu.menu(menu.FLEET)
+def _number(ship):
+    try: 
+        x, y = pyautogui.locateCenterOnScreen(ship.img, confidence=0.98) 
+    except:
+        return -1
+    pyautogui.moveTo(x, y+45) #xs_wait())
+    print(x, y)
+    pyautogui.doubleClick()
+    res = copy()
+    return -1 if res == '' else int(res)
+
+def get():
+    res = {}
+    _select(item=ALL_SHIPS)
+    res[LIGHT_FIGHTER] = _number(LIGHT_FIGHTER)
+    res[HEAVY_FIGHTER] = _number(HEAVY_FIGHTER)
+    res[CRUISER] = _number(CRUISER)
+    res[BATTLESHIP] = _number(BATTLESHIP)
+    res[BATTLECRUISER] = _number(BATTLECRUISER)
+    res[BOMBER] = _number(BOMBER)
+    res[DESTROYER] = _number(DESTROYER)
+    res[RIP] = _number(RIP)
+    res[SMALL_CARGO] = _number(SMALL_CARGO)
+    res[LARGE_CARGO] = _number(LARGE_CARGO)
+    res[COLONYSER] = _number(COLONYSER)
+    res[RECYCLER] = _number(RECYCLER)
+    res[ESP_PROBE] = _number(ESP_PROBE)
+    return res
+
 def _shortcut(planet, moon=False):
-    pyautogui.moveTo(X_PAD+1183, Y_PAD+232, xs_wait())
-    pyautogui.click()
-    x = 1015 if moon else 935
-    y = 345 + planet*25
-    pyautogui.moveTo(X_PAD+x, Y_PAD+y, xs_wait())
+    x, y = pyautogui.locateCenterOnScreen("images/arrow_down_green.png")
+    pyautogui.click(x, y)
+    xs_wait(wait=True)
+    x, y = pyautogui.locateCenterOnScreen("images/shortcut_coldsens.png")
+    if moon:
+        x += 75
+    y += (planet-1)*25
+    pyautogui.moveTo(x, y, xs_wait())
     pyautogui.click()
 
 
 def _send(speed=10, commit=True, resources=False):
-    x = 553+speed*62
-    pyautogui.moveTo(X_PAD+x, Y_PAD+716, xs_wait())
+    x, y = pyautogui.locateCenterOnScreen("images/speed_10.png")
+    x += (speed-1)*62
+    pyautogui.moveTo(x, y, xs_wait())
     pyautogui.click()
     if resources:
         _resources()
@@ -83,7 +119,8 @@ def _send(speed=10, commit=True, resources=False):
         enter()
 
 def _resources():
-    pyautogui.moveTo(X_PAD+1140, Y_PAD+516, xs_wait())
+    x, y = pyautogui.locateCenterOnScreen("images/fleet_all_resources.png")
+    pyautogui.moveTo(x, y, xs_wait())
     pyautogui.click()
     xs_wait(wait=True)
    
@@ -119,16 +156,19 @@ def recall(commit=True):
 
 def move(fleetlogic=FLEETLOGIC_FS1GX, fleetcomp=FLEETCOMP_ALL, speed=6, commit=True):
    for p in fleetlogic:
-        planet(*p)
+        menu.planet(*p)
         _select()
-        if pyautogui.pixel(X_PAD+821, Y_PAD+187) == (176, 0, 0):
+        try: 
+            pyautogui.locateOnScreen("images/no_ships.png")
+        except pyautogui.ImageNotFoundException:
+            for f in fleetcomp:
+                _select(*f)
+            enter()
+            _shortcut(*fleetlogic[p])
+            s_wait()
+            _send(speed, commit, resources=True)
+            m_wait()
+        else:
             print("ERROR: No fleet on planet")
-            continue
-        for f in fleetcomp:
-            _select(*f)
-        enter()
-        _shortcut(*fleetlogic[p])
-        s_wait()
-        _send(speed, commit, resources=True)
-        m_wait()
+
  

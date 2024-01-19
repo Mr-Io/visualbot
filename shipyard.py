@@ -1,30 +1,22 @@
+import re
+
 import pyautogui
 
+import menu
+
 from base import enter, xs_wait, s_wait, m_wait, copy
-from menu import menu, MENU_SHIPYARD
+from proc import get_code
+from ships import iterships
 
-BATTLECRUISER = "battlecruiser.png"
-BATTLESHIP = "battleship.png"
-BOMBER = "bomber.png"
-COLONYSER = "colonyser.png"
-CRUISER = "cruiser.png"
-DESTROYER = "destroyer.png"
-ESP_PROBE = "esp_probe.png" # problem with fleets...
-HEAVY_FIGHER = "heavy_fighter.png"
-LARGE_CARGO = "large_cargo.png"
-LIGHT_FIGHTER = "light_fighter.png"
-RECYCLER = "recycler.png"
-RIP = "rip.png"
-SMALL_CARGO = "small_cargo.png"
 
-@menu(MENU_SHIPYARD)
-def build(item=None, n=1, commit=True):
-    if item is None:
+@menu.menu(menu.SHIPYARD)
+def build(ship=None, n=1, commit=True):
+    if ship is None:
         return
     try:
-        x, y = pyautogui.locateCenterOnScreen(f"images/{item}", confidence=0.95)
+        x, y = pyautogui.locateCenterOnScreen(ship.img, confidence=0.95)
     except pyautogui.ImageNotFoundException:
-        print(f"Error: unable to build '{item}' (not available)")
+        print(f"Error: unable to build '{ship}' (not available)")
         return
     pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
@@ -37,22 +29,17 @@ def build(item=None, n=1, commit=True):
         pyautogui.moveTo(mx+30, my-30, xs_wait(wait=False))
         pyautogui.click()
         pyautogui.typewrite(f"{n}")
-    try:
-        buildb = pyautogui.locateCenterOnScreen("images/build.png")
-    except pyautogui.ImageNotFoundException:
-        if commit:
-            print(f"Error: {item} cannot be build")
-        return
     if commit:
         enter()
     m_wait()
 
-def number(item):
-    build(item, commit=False)
-    x, y = pyautogui.locateCenterOnScreen("images/number.png", confidence=0.9)
-    pyautogui.moveTo(x+28, y)
-    pyautogui.doubleClick()
-    return int(copy())
+@menu.menu(menu.SHIPYARD)
+def update_number():
+    html_text = get_code()
+    for s in iterships:
+        m = re.search(f'title="{s.cname} \((\d+)\)', html_text)
+        if m:
+            s.number = int(m.groups()[0]) if m else -1
 
 
 

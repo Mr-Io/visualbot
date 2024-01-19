@@ -4,8 +4,9 @@ import math
 
 import pyautogui
 
+import menu
+
 from base import X_PAD, Y_PAD, xs_wait, s_wait, screen_grab
-from menu import menu, MENU_GALAXY
 
 TARGET_BLUE = ((30, 100, 90), 
                (35, 120, 110))
@@ -19,32 +20,50 @@ def _is_target(target, tcomp):
         if pmin > x or pmax < x:
             return False
     return True
+ 
+def _targetcolor(planet, image=None):
+    if not image:
+        image = screen_grab()
+    px = image.getpixel((1050, 206+planet*35))
+    return px
 
-@menu(MENU_GALAXY)
-def system_up(go=1):
-    if go == 1:
-        pyautogui.moveTo(X_PAD+760, Y_PAD+156, xs_wait(wait=False))
-    else:
-        pyautogui.moveTo(X_PAD+700, Y_PAD+156, xs_wait(wait=False))
+@menu.menu(menu.GALAXY)
+def galaxy_up(go=1):
+    arrow = "arrow_right_green" if go > 0 else "arrow_left_green"
+    x, y = pyautogui.locateCenterOnScreen(f"images/{arrow}.png")
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
 
-@menu(MENU_GALAXY)
+@menu.menu(menu.GALAXY)
+def system_up(go=1):
+    arrow = "arrow_right_green" if go > 0 else "arrow_left_green"
+    a = pyautogui.locateAllOnScreen(f"images/{arrow}.png")
+    next(a)
+    x, y = pyautogui.center(next(a))
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
+    pyautogui.click()
+
+@menu.menu(menu.GALAXY)
 def _select(galaxy=None, system=None):
     if galaxy is None or system is None:
         return
     # change galaxy
-    pyautogui.moveTo(X_PAD+630, Y_PAD+156, xs_wait(wait=False))
+    x, y = pyautogui.locateCenterOnScreen("images/arrow_right_green.png")
+    x -= 28
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
     pyautogui.typewrite(f"{galaxy}")
     # change system
-    pyautogui.moveTo(X_PAD+735, Y_PAD+156, xs_wait(wait=False))
+    x += 100
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
     pyautogui.typewrite(f"{system}")
     # click go
-    pyautogui.moveTo(X_PAD+790, Y_PAD+156, xs_wait(wait=False))
+    x+= 60
+    pyautogui.moveTo(x, y, xs_wait(wait=False))
     pyautogui.click()
 
-@menu(MENU_GALAXY)
+@menu.menu(menu.GALAXY)
 def spy_all(commit=True):
     tries = 0
     while (tries < 6):
@@ -54,7 +73,10 @@ def spy_all(commit=True):
         if n_targets == 0 or not commit:
             return
         tries += 1
-        rt = math.pow(3, tries) + random.randrange(1, tries*2)
+        if tries > 2:
+            rt = math.pow(3, tries) + random.randrange(0, tries*2)
+        else:
+            rt = tries*s_wait(wait=False)
         #print(f"some spy attempt failed, waiting {rt} s before trying again (nº of tries:{tries})")
         time.sleep(rt)
     
@@ -74,9 +96,3 @@ def _spy_all(image=None, commit=True, count=False):
                     if commit:
                         pyautogui.click()
     return spied_number
- 
-def _targetcolor(planet, image=None):
-    if not image:
-        image = screen_grab()
-    px = image.getpixel((1050, 206+planet*35))
-    return px
