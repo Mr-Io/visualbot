@@ -19,8 +19,8 @@ import re
 import pyautogui
 
 from base import xs_wait, s_wait, m_wait, l_wait, X_PAD, Y_PAD, copy
-
 from proc import get_code
+from prod import Resource
 
 OVERVIEW = "menu_overview.png"
 SHIPYARD = "menu_shipyard.png"
@@ -68,10 +68,12 @@ def planet(number=1, moon=False, forced=False):
     
 def resources():
     html_text = get_code()
-    res = {}
+    res = Resource()
     for i in ["metal", "crystal", "deuterium"]:
         m = re.search(f'<span id="resources_{i}" data-raw="(\d+)"', html_text)
-        res[i] = int(m.groups()[0])
+        n = int(m.groups()[0])
+        setattr(res, i, n)
+    xs_wait(wait=True)
     return res
 
     

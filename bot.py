@@ -45,24 +45,27 @@ def spy(planets=range(1, 11), commit=True):
             time.sleep(0.5 + random.random())
             galaxy.spy_all(commit=commit)
         menu.go(menu.MSSG)
+        m_wait()
     end = time.time()
     dtime = end - start
     print(f"spy total duration: {dtime/60:.1f} min")
     return dtime
 
+def _build_defences(commit=True):
+    res = menu.resources()
+    defence.update_number()
+    for d in defence.iterdefences:
+        if d.buildable:
+            nbuild = min(d.maxlim - d.number, res // d.cost)
+            defence.build(d, n=nbuild, commit=commit)
+            res -= d.cost*nbuild
+            print(f"remaining: {res}")
+
 def build_defences(planets=range(1, 11), commit=True):
-    # check that we are in the correct tab
-    # go 10 galaxies back and print witch type of target it has
     start = time.time()
     for p in planets:
         menu.planet(p)
-        for d in [defence.SMALL_SHIELD, defence.LARGE_SHIELD, defence.ANTIBALLISTIC_MISSILE]:
-            defence.build(d, commit=commit)
-
-    for d in [defence.PLASMA_TURRET, defence.GAUSS_CANNON, defence.HEAVY_LASER, defence.ROCKET_LAUNCHER]:
-        for p in planets:
-            menu.planet(p)
-            defence.build(item=d, n=0, commit=commit)
+        _build_defences(commit=commit)
     end = time.time()
     dtime = end-start
     print(f"build defences total duration: {dtime/60:.1f} min")
@@ -80,7 +83,7 @@ def fleetsave_recall(hours, minutes=0, commit=True, build_lc = False):
         for p in fleet.FLEETLOGIC_FS1GX:
             menu.planet(*p)
             res = menu.resources()
-            needed_lc = int((res["metal"] + res["crystal"] + res["deuterium"]) / LARGE_CARGO.cargo)
+            needed_lc = int((res.metal + res.crystal + res.deuterium) / LARGE_CARGO.cargo)
             xs_wait(wait=True)
             shipyard.update_number()
             print(f" planet {p}: res= {res}, total_lc={needed_lc}, available={LARGE_CARGO.number}")
@@ -115,15 +118,12 @@ def auto_defence(hours, commit=True):
     while(True):
         for h in hours:
             while(h != datetime.datetime.now().hour):
-                time.sleep(600)
-            time.sleep(random.randrange(1, 1800))
+                time.sleep(random.randrange(1, 30*45))
             print(f"--- Starting auto defence at {time.asctime()} ----")
             start = time.time()
             proc.init()
             l_wait()
-            #random_actions(40)
             build_defences(commit=commit)
-            #random_actions(10)
             l_wait()
             end = time.time()
             dtime = end-start
