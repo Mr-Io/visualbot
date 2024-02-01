@@ -18,7 +18,7 @@ import re
 
 import pyautogui
 
-from base import xs_wait, s_wait, m_wait, l_wait, X_PAD, Y_PAD, copy
+from base import xs_wait, s_wait, m_wait, l_wait, X_PAD, Y_PAD, copy, reset_mouse
 from proc import get_code
 from prod import Resource
 
@@ -65,6 +65,7 @@ def planet(number=1, moon=False, forced=False):
         pyautogui.moveTo(X_PAD+x, Y_PAD+121+number*45, xs_wait(wait=False))
         pyautogui.click()
         m_wait()
+        reset_mouse()
     
 def resources():
     html_text = get_code()

@@ -32,7 +32,18 @@ def build(item, n, commit=True):
         enter()
     m_wait()
 
-
+def build_all(commit=True):
+    res = menu.resources()
+    print(f"res: {res}")
+    update_number()
+    for d in iterdefences:
+        if d.buildable:
+            nbuild = min(d.maxlim - d.number, res // d.cost)
+            if nbuild <= 0:
+                continue
+            build(d, n=nbuild, commit=commit)
+            res -= d.cost*nbuild
+            print(f"building {nbuild} {d} remaining res: {res}")
 
 @menu.menu(menu.DEFENCE)
 def update_number():

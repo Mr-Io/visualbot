@@ -22,8 +22,8 @@ import pyperclip
 from PIL import ImageGrab
 import pyautogui
 
-X_PAD =  2560 #2*1920
-Y_PAD =  144 #114
+X_PAD = 2*1920 #2560
+Y_PAD = 114 #144
 
 def l_wait():
     return time.sleep(8+2*random.random())
@@ -67,3 +67,6 @@ def copy():
     pyautogui.hotkey('ctrl', 'c')
     return pyperclip.paste()
 
+def reset_mouse():
+    pyautogui.moveTo(X_PAD+10, Y_PAD+500, xs_wait(wait=False))
+    pyautogui.click()

@@ -51,21 +51,11 @@ def spy(planets=range(1, 11), commit=True):
     print(f"spy total duration: {dtime/60:.1f} min")
     return dtime
 
-def _build_defences(commit=True):
-    res = menu.resources()
-    defence.update_number()
-    for d in defence.iterdefences:
-        if d.buildable:
-            nbuild = min(d.maxlim - d.number, res // d.cost)
-            defence.build(d, n=nbuild, commit=commit)
-            res -= d.cost*nbuild
-            print(f"remaining: {res}")
-
 def build_defences(planets=range(1, 11), commit=True):
     start = time.time()
     for p in planets:
         menu.planet(p)
-        _build_defences(commit=commit)
+        defence.build_all(commit=commit)
     end = time.time()
     dtime = end-start
     print(f"build defences total duration: {dtime/60:.1f} min")
