@@ -37,9 +37,10 @@ def build(ship=None, n=1, commit=True):
 def update_number():
     html_text = get_code()
     for s in iterships:
-        m = re.search(f'title="{s.cname} \((\d+)\)', html_text)
+        m = re.search(f'title="{s.cname} \((\d*,\d*)\)', html_text)
+        n = int(m.groups()[0].replace(',', '')) if m else -1
         if m:
-            s.number = int(m.groups()[0]) if m else -1
+            s.number = n
 
 
 

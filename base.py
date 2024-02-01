@@ -22,8 +22,8 @@ import pyperclip
 from PIL import ImageGrab
 import pyautogui
 
-X_PAD = 2*1920 #2560 
-Y_PAD = 114 #144 
+X_PAD =  2560 #2*1920
+Y_PAD =  144 #114
 
 def l_wait():
     return time.sleep(8+2*random.random())
