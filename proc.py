@@ -5,7 +5,7 @@ import pyautogui
 import base
 
 
-def init():
+def init(uni="1"):
     # open browser
     webbrowser.get('firefox').open("https://lobby.ogame.gameforge.com/en_GB/hub",
                                    new=1, 
@@ -27,7 +27,8 @@ def init():
     pyautogui.moveTo(*logb, 0.4)
     pyautogui.click()
     base.m_wait()
-    pyautogui.moveTo(base.X_PAD+1390, base.Y_PAD+241, base.xs_wait())
+    xplay, yplay = pyautogui.locateCenterOnScreen(f"images/uni_{uni}.png", confidence=0.99)
+    pyautogui.moveTo(xplay+750, yplay, base.xs_wait())
     pyautogui.click()
     base.l_wait()
 

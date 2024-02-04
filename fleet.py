@@ -99,8 +99,8 @@ def get():
 def _shortcut(planet, moon=False):
     x, y = pyautogui.locateCenterOnScreen("images/arrow_down_green.png")
     pyautogui.click(x, y)
-    xs_wait(wait=True)
-    x, y = pyautogui.locateCenterOnScreen("images/shortcut_coldsens.png")
+    s_wait(wait=True)
+    x, y = pyautogui.locateCenterOnScreen("images/shortcut_coldsens.png", confidence=0.99)
     if moon:
         x += 75
     y += (planet-1)*25
